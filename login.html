@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Adams</title>
+  </head>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0%;
+      padding: 0%;
+    }
+    .center {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+    }
+    form > label {
+      text-align: center;
+      width: 40%;
+      padding: 2%;
+      font-size: 18px;
+    }
+    form > input {
+      text-align: center;
+      padding: 1%;
+      margin: 1%;
+      width: 40%;
+    }
+    input[type="text"] {
+      text-align: start;
+    }
+    input[type="submit"] {
+      font-size: 18px;
+      background-color: #069;
+      color: white;
+      width: 40%;
+    }
+  </style>
+  <body>
+    <div class="center">
+      <section class="login">
+        <form id="form">
+          <label for="nome">Nome</label>
+          <input id="usuario" type="text" />
+          <input type="submit" value="entrar" />
+        </form>
+      </section>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    var socket = io();
+    var input = document.getElementById("usuario");
+    socket.on("novo", (request) => {
+      if (request.usuario == input.value) {
+        window.location = "/chat";
+      }
+    });
+
+    document.querySelector("#form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      socket.emit("novo", { usuario: input.value, teste: "teste" });
+      //   window.location = "/save/andre";
+    });
+  </script>
+</html>

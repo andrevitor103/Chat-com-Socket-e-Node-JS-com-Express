@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+        margin-bottom: 1%;
+      }
+
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+
+      #input:focus {
+        outline: none;
+      }
+
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
+
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
+    </style>
+  </head>
+
+  <body>
+    <ul id="messages"></ul>
+
+    <p id="digitando" style="opacity: 0"></p>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      var socket = io();
+      var input = document.querySelector("#input");
+      //var usuario = prompt("Qual o seu nome ?");
+      var usuario = "anonimo";
+      var logou = false;
+      var form = document.querySelector("form");
+
+      socket.emit("entrei");
+
+      socket.on("logou", (request) => {
+        if (request.entrouDireto && logou == false) {
+          window.location = "/";
+        } else if (usuario == "anonimo") {
+          usuario = request.usuario;
+          logou = true;
+        }
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        socket.emit("chat message", { msg: input.value, nome: usuario });
+        form.reset();
+        socket.emit("digitando", { nome: usuario, msg: input.value });
+      });
+
+      form.addEventListener("keyup", () => {
+        socket.emit("digitando", { nome: usuario, msg: input.value });
+      });
+
+      socket.on("digitando", (request) => {
+        if (request.msg != "") {
+          document.querySelector("#digitando").style.opacity = 1;
+          document.querySelector(
+            "#digitando"
+          ).textContent = `${request.nome} digitando...`;
+        } else {
+          document.querySelector("#digitando").style.opacity = 0;
+          document.querySelector("#digitando").textContent = "";
+        }
+      });
+
+      socket.on("conectado", (request) => {
+        alert("Foiii");
+      });
+      socket.on("chat message", (request) => {
+        let novaLinha = document.createElement("li");
+        if (request.nome == usuario) {
+          novaLinha.style.backgroundColor = "gray";
+          novaLinha.style.color = "white";
+        } else {
+          novaLinha.style.backgroundColor = "white";
+        }
+        novaLinha.textContent = request.nome + " : " + request.msg;
+        document.querySelector("#messages").appendChild(novaLinha);
+        window.scrollTo = 0;
+      });
+    </script>
+  </body>
+</html>
